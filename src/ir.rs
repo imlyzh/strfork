@@ -7,7 +7,7 @@
 
 #[derive(Debug)]
 pub enum Match {
-  MatchString(Option<String>, Option<Box<Match>>),
+  MatchString(String, Option<Box<Match>>),
   Fork(Vec<Match>),
   Loop(LoopType, Box<Match>),
 }
@@ -16,6 +16,5 @@ pub enum Match {
 pub enum LoopType {
   ZeroOrMore,
   OneOrMore,
-  CycleNTimes(usize)
+  // CycleNTimes(usize)
 }
-

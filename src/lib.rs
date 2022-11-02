@@ -1,5 +1,6 @@
 pub mod ir;
 pub mod bytecodes;
+pub mod ir2bc;
 
 
 #[cfg(test)]
