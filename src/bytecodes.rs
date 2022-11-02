@@ -26,22 +26,21 @@ pub enum HighlevelSFbytecode {
 pub enum SFbytecode {
   accept  = 0b0000_0010,
   reject  = 0b0000_0100,
-  skip    = 0b0000_1000,
-  pop     = 0b0000_0001,
-  jump_f  = 0b0001_0001,
-  jump_b  = 0b1001_0001,
-  match1u = 0b0001_1001,
-  match2u = 0b0010_1001,
-  match3u = 0b0011_1001,
-  match4u = 0b0100_1001,
-  match5u = 0b0101_1001,
-  match6u = 0b0110_1001,
-  match7u = 0b0111_1001,
-  match8u = 0b1000_1001,
+  skip    = 0b0000_0110,  // idx(index) = idx+1
+  push    = 0b0000_1000,  // push(idx)
 
-  try_cycle = 0b0000_1101,
-  fork2     = 0b0001_1101,
-  // fork,
-  // start_count_cycle,
-  // complated_once_cycle,
+  jump_f  = 0b0001_0001,  // pc(program counter) = pc+1+n
+  jump_b  = 0b1001_0001,  // pc = pc - n
+
+  match1u = 0b0000_1001,  // if load1(idx) != load1(pc+1) { idx = pop(); jump(top()); } else { idx=idx+1; }
+  // match2u = 0b0001_1001,  // if load1(idx) != load2(pc+1) { idx = pop(); jump(top()); } else { idx=idx+1; }
+  // match3u = 0b0010_1001,
+  // match4u = 0b0011_1001,
+
+  range1u = 0b0000_0011,
+  // range2u = 0b0001_0011,
+  // range3u = 0b0010_0011,
+  // range4u = 0b0011_0011,
+
+  fork2   = 0b0000_1011,  // push(load(pc+2)); jump(load(pc+1));
 }

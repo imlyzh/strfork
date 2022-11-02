@@ -1,7 +1,8 @@
 use std::vec;
 
 use crate::ir::*;
-use crate::ir::Match::*;
+use crate::ir::RawMatch::*;
+use crate::ir::LineMatch::*;
 use crate::bytecodes::*;
 use crate::bytecodes::SFbytecode::*;
 
@@ -12,8 +13,17 @@ pub trait Ir2bc {
 
 impl Ir2bc for Match {
   fn gen_bc(&self, buf: &mut Vec<u8>) {
+    self.0.gen_bc(buf);
+    if let Some(x) = self.1 {
+      x.gen_bc(buf);
+    }
+  }
+}
+
+impl Ir2bc for RawMatch {
+  fn gen_bc(&self, buf: &mut Vec<u8>) {
     match self {
-      MatchString(str, next) => {
+      MatchString(Str(str)) => {
         let str = str.as_bytes();
         match str.len() {
           0 => buf.push(skip as u8),
@@ -22,14 +32,12 @@ impl Ir2bc for Match {
           // 3 => buf.push(Match3u(str.try_into().unwrap())),
           // 4 => buf.push(Match4u(str.try_into().unwrap())),
           _ => {
-            buf.push(matchn as u8);
+            // buf.push(matchn as u8);
+            unimplemented!();
             buf.push(str.len().try_into().expect("match string oversized (> 256)"));
             buf.extend(str)
           },
         };
-        if let Some(x) = next {
-          x.gen_bc(buf);
-        }
       }
       Fork(matchs) => {
         assert!(matchs.len() == 2, "fork branch is not 2");
@@ -40,7 +48,7 @@ impl Ir2bc for Match {
         assert!(b1_len > 0, "branch is not zero");
 
         let mut b2_code = vec![];
-        matchs[0].gen_bc(&mut b1_code);
+        matchs[0].gen_bc(&mut b2_code);
 
         let b2_len: u8 = b1_code.len().try_into().expect("match string oversized (> 256)");
         assert!(b2_len > 0, "branch is not zero");
@@ -53,14 +61,12 @@ impl Ir2bc for Match {
         buf.push(b2_len);
 
         buf.append(&mut b1_code);
-
-        buf.push(pop as u8);
+        unimplemented!()
       }
       _ => todo!()
     }
   }
 }
-
 
 
 #[cfg(test)]
