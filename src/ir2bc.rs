@@ -1,11 +1,15 @@
-use std::vec;
-
 use crate::ir::*;
 use crate::ir::RawMatch::*;
 use crate::ir::LineMatch::*;
 use crate::bytecodes::*;
-use crate::bytecodes::SFbytecode::*;
 
+
+pub fn gen_bc(i: &Match) -> Vec<u8> {
+  let mut buf = vec![];
+  i.gen_bc(&mut buf);
+  buf.push(accept as u8);
+  buf
+}
 
 pub trait Ir2bc {
   fn gen_bc(&self, buf: &mut Vec<u8>);
@@ -13,8 +17,9 @@ pub trait Ir2bc {
 
 impl Ir2bc for Match {
   fn gen_bc(&self, buf: &mut Vec<u8>) {
-    self.0.gen_bc(buf);
-    if let Some(x) = self.1 {
+    let Match(v, next) = self;
+    v.gen_bc(buf);
+    if let Some(x) = next {
       x.gen_bc(buf);
     }
   }
@@ -23,50 +28,61 @@ impl Ir2bc for Match {
 impl Ir2bc for RawMatch {
   fn gen_bc(&self, buf: &mut Vec<u8>) {
     match self {
-      MatchString(Str(str)) => {
-        let str = str.as_bytes();
-        match str.len() {
-          0 => buf.push(skip as u8),
-          // 1 => buf.push(Match1u(str.try_into().unwrap())),
-          // 2 => buf.push(Match2u(str.try_into().unwrap())),
-          // 3 => buf.push(Match3u(str.try_into().unwrap())),
-          // 4 => buf.push(Match4u(str.try_into().unwrap())),
-          _ => {
-            // buf.push(matchn as u8);
-            unimplemented!();
-            buf.push(str.len().try_into().expect("match string oversized (> 256)"));
-            buf.extend(str)
-          },
-        };
-      }
+      MatchString(x) => x.gen_bc(buf),
       Fork(matchs) => {
         assert!(matchs.len() == 2, "fork branch is not 2");
-        let mut b1_code = vec![];
-        matchs[0].gen_bc(&mut b1_code);
+        let mut c0 = vec![];
+        matchs[0].gen_bc(&mut c0);
+        let mut c1 = vec![];
+        matchs[1].gen_bc(&mut c1);
+        let c0_len: i8 = c1.len().try_into().expect("match string oversized i8");
+        let c1_len: i8 = c1.len().try_into().expect("match string oversized i8");
 
-        let b1_len: u8 = b1_code.len().try_into().expect("match string oversized (> 256)");
-        assert!(b1_len > 0, "branch is not zero");
+        // add jump inst
+        c0.push(jump as u8);
+        c0.push((c1_len + 2) as u8);
 
-        let mut b2_code = vec![];
-        matchs[0].gen_bc(&mut b2_code);
-
-        let b2_len: u8 = b1_code.len().try_into().expect("match string oversized (> 256)");
-        assert!(b2_len > 0, "branch is not zero");
-
+        // dump to main buffer
+        // fork2 inst
         buf.push(fork2 as u8);
-        buf.push(b1_len-1);
-        buf.append(&mut b1_code);
-
-        buf.push(jump_b as u8);
-        buf.push(b2_len);
-
-        buf.append(&mut b1_code);
-        unimplemented!()
+        buf.push(3 as u8);
+        buf.push((c0_len + 3) as u8);
+        // branch0
+        buf.append(&mut c0);
+        // branch1
+        buf.append(&mut c1);
       }
-      _ => todo!()
+      Loop(_, _) => {
+        unimplemented!("loop")
+      }
     }
   }
 }
+
+impl Ir2bc for LineMatch {
+  fn gen_bc(&self, buf: &mut Vec<u8>) {
+    match self {
+      Str(str) => {
+        let str = str.as_bytes();
+        if str.len() == 0 {
+          buf.push(skip as u8);
+          return;
+        }
+        for i in str {
+          buf.push(match1u as u8);
+          buf.push(*i);
+        }
+      }
+      Range(CharRange::U1(l, r)) => {
+        buf.push(range1u as u8);
+        buf.push(*l);
+        buf.push(*r);
+      }
+      _ => unimplemented!("unimpl > u8 char range")
+    }
+  }
+}
+
 
 
 #[cfg(test)]

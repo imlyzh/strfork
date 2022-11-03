@@ -20,7 +20,8 @@ pub enum HighlevelSFbytecode {
 }
 // */
 
-#[derive(Debug)]
+/*
+#[derive(Debug, Clone, Copy)]
 #[repr(u8)]
 #[allow(non_camel_case_types)]
 pub enum SFbytecode {
@@ -29,18 +30,22 @@ pub enum SFbytecode {
   skip    = 0b0000_0110,  // idx(index) = idx+1
   push    = 0b0000_1000,  // push(idx)
 
-  jump_f  = 0b0001_0001,  // pc(program counter) = pc+1+n
-  jump_b  = 0b1001_0001,  // pc = pc - n
+  jump    = 0b0000_0001,  // pc(program counter) = pc+load(pc+1)
+  // jump_b  = 0b1001_0001,  // pc = pc - n
 
   match1u = 0b0000_1001,  // if load1(idx) != load1(pc+1) { idx = pop(); jump(top()); } else { idx=idx+1; }
-  // match2u = 0b0001_1001,  // if load1(idx) != load2(pc+1) { idx = pop(); jump(top()); } else { idx=idx+1; }
-  // match3u = 0b0010_1001,
-  // match4u = 0b0011_1001,
 
   range1u = 0b0000_0011,
-  // range2u = 0b0001_0011,
-  // range3u = 0b0010_0011,
-  // range4u = 0b0011_0011,
 
-  fork2   = 0b0000_1011,  // push(load(pc+2)); jump(load(pc+1));
+  fork2   = 0b0000_1011,  // push(load(pc+2)); push(idx); jump(load(pc+1));
 }
+ */
+
+pub const accept: u8  = 0b0000_0010;
+pub const reject: u8  = 0b0000_0100;
+pub const skip: u8    = 0b0000_0110;  // idx(index) = idx+1
+pub const push: u8    = 0b0000_1000;  // push(idx)
+pub const jump: u8    = 0b0000_0001;  // pc(program counter) = pc+load(pc+1)
+pub const match1u: u8 = 0b0000_1001;  // if load1(idx) != load1(pc+1) { idx = pop(); jump(top()); } else {
+pub const range1u: u8 = 0b0000_0011;
+pub const fork2: u8   = 0b0000_1011;

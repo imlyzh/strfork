@@ -18,7 +18,14 @@ pub enum RawMatch {
 #[derive(Debug)]
 pub enum LineMatch {
   Str(String),
-  Range(Vec<char>),
+  Range(CharRange),
+}
+
+#[derive(Debug)]
+pub enum CharRange {
+  U1(u8, u8),
+  U2(u16, u16),
+  U4(u32, u32),
 }
 
 #[derive(Debug)]
