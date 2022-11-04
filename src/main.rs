@@ -10,13 +10,13 @@ fn main() {
   ]), None);
   let codes = gen_bc(&ir);
 
-  for i in codes.iter() {
-    println!("{:8b} {}", i, i);
+  for (size, i) in codes.iter().enumerate() {
+    println!("{:4}: {:8b} {}", size, i, i);
   }
 
   let state = State::new();
 
-  let src = "ab".as_bytes();
+  let src = "bb".as_bytes();
   let result = state.direct_interpret(&codes, src);
   println!("out: {}", result);
 }

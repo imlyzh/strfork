@@ -35,13 +35,15 @@ impl Ir2bc for RawMatch {
         matchs[0].gen_bc(&mut c0);
         let mut c1 = vec![];
         matchs[1].gen_bc(&mut c1);
-        let c0_len: i8 = c1.len().try_into().expect("match string oversized i8");
+
         let c1_len: i8 = c1.len().try_into().expect("match string oversized i8");
 
         // add jump inst
         c0.push(jump as u8);
         c0.push((c1_len + 2) as u8);
 
+        let c0_len: i8 = c0.len().try_into().expect("match string oversized i8");
+        dbg!(c0_len);
         // dump to main buffer
         // fork2 inst
         buf.push(fork2 as u8);
