@@ -43,11 +43,7 @@ impl State {
   #[inline]
   pub fn direct_interpret(mut self, codes: &[u8], src: &[u8]) -> bool {
     loop {
-      println!("eval");
-      let pc = dbg!(self.pc);
-      let idx = dbg!(self.idx);
-      let code = dbg!(codes[pc]);
-      match code {
+      match codes[self.pc] {
         accept => return true,
         skip => {
           self.idx += 1;
@@ -76,9 +72,6 @@ impl State {
           let br1pc = (self.pc as isize + br1) as usize;
           let br2pc = (self.pc as isize + br2) as usize;
           let idx = self.idx;
-          println!("fork2:");
-          dbg!(br2pc);
-          dbg!(idx);
           self = self.push_backpoint(br2pc, idx);
           self.pc = br1pc;
           continue;
