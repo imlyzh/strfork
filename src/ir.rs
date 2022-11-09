@@ -30,7 +30,7 @@ pub enum CharRange {
 
 #[derive(Debug)]
 pub enum LoopType {
-  ZeroOrMore,
+  // ZeroOrMore,
   OneOrMore,
   // CycleNTimes(usize)
 }

@@ -1,6 +1,7 @@
 use crate::ir::*;
 use crate::ir::RawMatch::*;
 use crate::ir::LineMatch::*;
+use crate::ir::LoopType::*;
 use crate::bytecodes::*;
 
 
@@ -43,7 +44,6 @@ impl Ir2bc for RawMatch {
         c0.push((c1_len + 2) as u8);
 
         let c0_len: i8 = c0.len().try_into().expect("match string oversized i8");
-        dbg!(c0_len);
         // dump to main buffer
         // fork2 inst
         buf.push(fork2 as u8);
@@ -54,8 +54,17 @@ impl Ir2bc for RawMatch {
         // branch1
         buf.append(&mut c1);
       }
-      Loop(_, _) => {
-        unimplemented!("loop")
+      Loop(OneOrMore, body) => {
+        let mut codes = vec![];
+
+        body.gen_bc(&mut codes);
+
+        let codes_len: i8 = codes.len().try_into().expect("match string oversized i8");
+
+        buf.append(&mut codes);
+        buf.push(fork2 as u8);
+        buf.push((-codes_len) as u8);
+        buf.push(3 as u8);
       }
     }
   }

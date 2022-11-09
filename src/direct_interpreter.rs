@@ -54,16 +54,17 @@ impl State {
           self.pc = (self.pc as isize + offset) as usize;
         }
         match1u => {
-          if codes[self.pc+1] != src[self.idx] {
-            if let Some(x) = self.pop() {
-              self = x;
+          if let Some(src) = src.get(self.idx) {
+            if codes[self.pc+1] == *src {
+              self.idx+=1;
+              self.pc+=2;
               continue;
-            } else {
-              return false;
             }
+          }
+          if let Some(x) = self.pop() {
+            self = x;
           } else {
-            self.idx+=1;
-            self.pc+=2;
+            return false;
           }
         }
         fork2 => {
